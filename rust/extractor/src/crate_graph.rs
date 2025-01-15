@@ -432,20 +432,18 @@ fn make_path(crate_graph: &CrateGraph, db: &dyn HirDatabase, item: impl HasModul
     loop {
         if module.is_block_module() {
             path.push("<block>".to_owned());
+        } else if let Some(name) = module.name(db).map(|x| x.as_str().to_owned()).or_else(|| {
+            module.as_crate_root().and_then(|k| {
+                let krate = &crate_graph[k.krate()];
+                krate
+                    .display_name
+                    .as_ref()
+                    .map(|x| x.canonical_name().to_string())
+            })
+        }) {
+            path.push(name);
         } else {
-            if let Some(name) = module.name(db).map(|x| x.as_str().to_owned()).or_else(|| {
-                module.as_crate_root().and_then(|k| {
-                    let krate = &crate_graph[k.krate()];
-                    krate
-                        .display_name
-                        .as_ref()
-                        .map(|x| x.canonical_name().to_string())
-                })
-            }) {
-                path.push(name);
-            } else {
-                path.push("<unnamed>".to_owned());
-            }
+            path.push("<unnamed>".to_owned());
         }
         if let Some(parent) = module.containing_module(db) {
             module = parent;
