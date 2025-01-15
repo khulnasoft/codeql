@@ -123,7 +123,12 @@ pub fn extract_crate_graph(trap_provider: &trap::TrapFileProvider, db: &RootData
             let mut types = Vec::new();
             for (name, item) in items.entries() {
                 let def = item.with_visibility(ra_ap_hir::Visibility::Public);
-                if let Some((value, _, _import)) = def.values {
+                if let Some(ra_ap_hir_def::per_ns::Item {
+                    def: value,
+                    vis: _,
+                    import: _,
+                }) = def.values
+                {
                     match value {
                         ModuleDefId::FunctionId(function) => {
                             let type_ = db.value_ty(function.into());
@@ -178,10 +183,15 @@ pub fn extract_crate_graph(trap_provider: &trap::TrapFileProvider, db: &RootData
                         _ => (),
                     }
                 }
-                if let Some((type_id, _, _import)) = def.types {
+                if let Some(ra_ap_hir_def::per_ns::Item {
+                    def: type_id,
+                    vis: _,
+                    import: _,
+                }) = def.types
+                {
                     if let ModuleDefId::AdtId(adt_id) = type_id {
                         match adt_id {
-                            ra_ap_hir::AdtId::StructId(struct_id) => {
+                            ra_ap_hir_def::AdtId::StructId(struct_id) => {
                                 let content =
                                     emit_variant_data(trap, crate_graph, db, struct_id.into());
                                 types.push(
@@ -194,7 +204,7 @@ pub fn extract_crate_graph(trap_provider: &trap::TrapFileProvider, db: &RootData
                                     .into(),
                                 );
                             }
-                            ra_ap_hir::AdtId::EnumId(enum_id) => {
+                            ra_ap_hir_def::AdtId::EnumId(enum_id) => {
                                 let data = db.enum_data(enum_id);
                                 let variants = data
                                     .variants
@@ -222,7 +232,7 @@ pub fn extract_crate_graph(trap_provider: &trap::TrapFileProvider, db: &RootData
                                     .into(),
                                 );
                             }
-                            ra_ap_hir::AdtId::UnionId(union_id) => {
+                            ra_ap_hir_def::AdtId::UnionId(union_id) => {
                                 let content =
                                     emit_variant_data(trap, crate_graph, db, union_id.into());
                                 types.push(
@@ -520,13 +530,15 @@ fn emit_hir_ty(
         chalk_ir::TyKind::Adt(adt_id, _substitution) => {
             let mut path = make_path(crate_graph, db, adt_id.0);
             let name = match adt_id.0 {
-                ra_ap_hir::AdtId::StructId(struct_id) => {
+                ra_ap_hir_def::AdtId::StructId(struct_id) => {
                     db.struct_data(struct_id).name.as_str().to_owned()
                 }
-                ra_ap_hir::AdtId::UnionId(union_id) => {
+                ra_ap_hir_def::AdtId::UnionId(union_id) => {
                     db.union_data(union_id).name.as_str().to_owned()
                 }
-                ra_ap_hir::AdtId::EnumId(enum_id) => db.enum_data(enum_id).name.as_str().to_owned(),
+                ra_ap_hir_def::AdtId::EnumId(enum_id) => {
+                    db.enum_data(enum_id).name.as_str().to_owned()
+                }
             };
             path.push(name);
             trap.emit(generated::PathType {
