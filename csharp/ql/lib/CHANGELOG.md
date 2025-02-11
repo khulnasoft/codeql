@@ -1,3 +1,24 @@
+## 5.0.0
+
+### Breaking Changes
+
+* Deleted the deprecated `getInstanceType` predicate from the `UnboundGenericType` class.
+* Deleted the deprecated `getElement` predicate from the `Node` class in `ControlFlowGraph.qll`, use `getAstNode` instead.
+
+### Minor Analysis Improvements
+
+* C# 13: Added MaD models for some overload implementations using `ReadOnlySpan` parameters (like `String.Format(System.String, System.ReadOnlySpan<System.Object>))`).
+* C# 13: Added support for the overload resolution priority attribute (`OverloadResolutionPriority`). Usages of the attribute and the corresponding priority can be found using the QL class `SystemRuntimeCompilerServicesOverloadResolutionPriorityAttribute`.
+* C# 13: Added support for partial properties and indexers.
+
+## 4.0.2
+
+### Minor Analysis Improvements
+
+* Added extractor support for extracting implicit `ToString` calls in binary `+` expressions and string interpolation expressions.
+* The Razor source generator invocation in `build-mode:none` extraction has been changed to use relative file paths instead of absolute ones.
+* C# 13: Added extractor support and call dispatch logic (data flow) for the (negative) type parameter constraint `allows ref struct`. Added extractor support for the type parameter constraint `notnull`.
+
 ## 4.0.1
 
 ### Minor Analysis Improvements
