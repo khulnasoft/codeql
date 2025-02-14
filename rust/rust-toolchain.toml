@@ -1,7 +1,8 @@
-# This file specifies the Rust version used to develop and test the QL
-# extractor. It is set to the lowest version of Rust we want to support.
+# This file specifies the Rust version used to develop and test the rust
+# extractor. It will in general be set to the latest rust toolchain, as
+# that is what is required by rust-analyzer.
 
 [toolchain]
 channel = "1.84"
 profile = "minimal"
-components = [ "rustfmt" ]
+components = [ "clippy", "rustfmt" ]
