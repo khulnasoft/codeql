@@ -1,0 +1,48 @@
+name: Sync Main
+on:
+  schedule:
+    - cron:  '55 * * * *'
+jobs:
+  sync-main:
+    name: Sync-main
+    runs-on: ubuntu-latest
+    if: github.repository == 'khulnasoft/codeql'
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.ORG_REPO_TOKEN }}
+      - name: Git config
+        shell: bash
+        run: |
+          git config user.name Md Sulaiman
+          git config user.email dev.sulaiman@icloud.com
+      - name: Sync Main
+        shell: bash
+        run: |
+          set -x
+          git fetch
+          git remote add upstream https://github.com/github/codeql.git
+          git fetch upstream --tags --force
+          git merge codeql-cli/latest
+      - name: Setup CodeQL
+        shell: bash
+        run: |
+          gh extension install github/gh-codeql
+          gh codeql version
+          printf "CODEQL_FETCHED_CODEQL_PATH=" >> "${GITHUB_ENV}"
+          gh codeql version --format=json | jq -r .unpackedLocation >> "${GITHUB_ENV}"
+          gh codeql version --format=json | jq -r .unpackedLocation >> "${GITHUB_PATH}"
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Compile PowerShell Queries
+        run: |
+          codeql query compile --check-only --keep-going powershell/ql/src
+      - name: Complete Sync
+        shell: bash
+        run: |
+          git push origin main
+          git push origin --tags --force
